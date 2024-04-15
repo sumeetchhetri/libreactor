@@ -9,6 +9,17 @@
 
 #include "../reactor.h"
 
+static reactor_status reactor_user_default_callback(reactor_event *event __attribute__((unused)))
+{
+  return REACTOR_OK;
+}
+
+reactor_user reactor_user_default1 =
+  {
+   .callback = reactor_user_default_callback,
+   .state = NULL
+  };
+
 typedef struct reactor_core reactor_core;
 struct reactor_core
 {
@@ -113,7 +124,7 @@ void reactor_core_deregister(reactor_user *user)
 
   for (i = r_core.current; i < r_core.received; i ++)
     if (r_core.events[i].data.ptr == user)
-      r_core.events[i].data.ptr = &reactor_user_default;
+      r_core.events[i].data.ptr = &reactor_user_default1;
 
   r_core.active --;
 }
@@ -139,7 +150,7 @@ reactor_id reactor_core_schedule(reactor_user_callback *callback, void *state)
 void reactor_core_cancel(reactor_id id)
 {
   if (id > 0)
-    ((reactor_user *) vector_data(&r_core.next))[id - 1] = reactor_user_default;
+    ((reactor_user *) vector_data(&r_core.next))[id - 1] = reactor_user_default1;
 }
 
 uint64_t reactor_core_now(void)
